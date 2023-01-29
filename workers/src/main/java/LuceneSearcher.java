@@ -1,12 +1,13 @@
 import com.sun.net.httpserver.HttpExchange;
 import com.sun.net.httpserver.HttpHandler;
-import org.apache.lucene.index.Term;
 import org.apache.lucene.queryparser.classic.QueryParser;
 import org.apache.lucene.search.*;
 import org.json.JSONArray;
 import org.json.JSONObject;
 
+import java.io.BufferedReader;
 import java.io.IOException;
+import java.io.InputStreamReader;
 import java.io.OutputStream;
 
 public class LuceneSearcher implements HttpHandler {
@@ -24,27 +25,47 @@ public class LuceneSearcher implements HttpHandler {
 
     public void handle(HttpExchange httpExchange) throws IOException {
 
-        String requestParamValue = null;
+        String requestBody;
 
         if ("GET".equals(httpExchange.getRequestMethod())) {
-            requestParamValue = handleGetRequest(httpExchange);
-            handleResponse(httpExchange,requestParamValue);
+            requestBody = handleGetRequest(httpExchange);
+            handleResponse(httpExchange,requestBody);
         }
     }
 
     private String handleGetRequest(HttpExchange httpExchange) throws  IOException {
-        return httpExchange.getRequestURI()
-                .toString()
-                .split("\\?")[1]
-                .split("=")[1];
+        InputStreamReader isr =  new InputStreamReader(httpExchange.getRequestBody(),"utf-8");
+        BufferedReader br = new BufferedReader(isr);
+
+// From now on, the right way of moving from bytes to utf-8 characters:
+
+        int b;
+        StringBuilder buf = new StringBuilder(512);
+        while ((b = br.read()) != -1) {
+            buf.append((char) b);
+        }
+
+        br.close();
+        isr.close();
+
+        return buf.toString();
     }
 
     public static void handleResponse(HttpExchange httpExchange, String requestParamValue)  throws  IOException {
         try {
+            JSONObject requestBody = new JSONObject(requestParamValue);
+
+            String query = requestBody.get("query").toString();
+
+            if (query == null || query.equals(""))
+                return;
+
+            System.out.println(query);
+
+            query = "title:\"" + query + "\" OR content:\"" + query + "\"";
+
             searchManager.maybeRefresh();
             IndexSearcher searcher = searchManager.acquire();
-
-            String query = "title:" + requestParamValue + " OR content:" + requestParamValue;
 
             TopDocs docs = searcher.search(queryParser.parse(query), 10);
 
@@ -70,5 +91,4 @@ public class LuceneSearcher implements HttpHandler {
             searchManager.release(searcher);
         } catch (Exception ignored) {}
     }
-
 }

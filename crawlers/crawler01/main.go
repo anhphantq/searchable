@@ -324,7 +324,7 @@ func main() {
 
 	SENDER_URL = os.Getenv("SENDER_URL")
 
-	print(SENDER_URL)
+	println(SENDER_URL)
 
 	Client = http.Client{
 		Timeout: 2 * time.Second,
