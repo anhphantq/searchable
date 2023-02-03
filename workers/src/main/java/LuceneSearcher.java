@@ -9,7 +9,8 @@ import java.io.BufferedReader;
 import java.io.IOException;
 import java.io.InputStreamReader;
 import java.io.OutputStream;
-
+import java.util.Map;
+import java.util.HashMap;
 public class LuceneSearcher implements HttpHandler {
     private static SearcherManager searchManager;
     private static QueryParser queryParser;
@@ -24,7 +25,7 @@ public class LuceneSearcher implements HttpHandler {
     }
 
     public void handle(HttpExchange httpExchange) throws IOException {
-
+        httpExchange.getResponseHeaders().add("Access-Control-Allow-Origin", "*");
         String requestBody;
 
         if ("GET".equals(httpExchange.getRequestMethod())) {
@@ -51,11 +52,33 @@ public class LuceneSearcher implements HttpHandler {
         return buf.toString();
     }
 
+    private static Map<String, String> queryToMap(String query) {
+        Map<String, String> result = new HashMap<>();
+        for (String param : query.split("&")) {
+            String[] entry = param.split("=");
+            if (entry.length > 1) {
+                result.put(entry[0], entry[1]);
+            }else{
+                result.put(entry[0], "");
+            }
+        }
+        return result;
+    }
+
+
     public static void handleResponse(HttpExchange httpExchange, String requestParamValue)  throws  IOException {
         try {
-            JSONObject requestBody = new JSONObject(requestParamValue);
+            String queryString = httpExchange.getRequestURI().getQuery();
+            String query = null;
+            if (queryString != null) {
+                Map<String, String> params = queryToMap(httpExchange.getRequestURI().getQuery());
+                query = params.get("query");
+            }
 
-            String query = requestBody.get("query").toString();
+            if (requestParamValue != null && !requestParamValue.equals("") ) {
+                JSONObject requestBody = new JSONObject(requestParamValue);
+                query = requestBody.get("query").toString();
+            }
 
             if (query == null || query.equals(""))
                 return;
