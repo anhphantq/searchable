@@ -77,6 +77,7 @@ public class LuceneSearcher implements HttpHandler {
             if (queryString != null) {
                 Map<String, String> params = queryToMap(httpExchange.getRequestURI().getQuery());
                 query = params.get("query");
+                type = Integer.parseInt(params.get("type").toString());
             }
 
             if (requestParamValue != null && !requestParamValue.equals("") ) {
@@ -90,6 +91,8 @@ public class LuceneSearcher implements HttpHandler {
             /*
             ["PhraseBoolean", "PhraseBooleanSlope", "BooleanQuery", "LuceneRawQuery", "FuzzyPhrase", "FuzzyBoolean"]
              */
+
+            System.out.println(type);
 
 
             switch (type){
