@@ -302,7 +302,7 @@ func docsToScrape(page Page) {
 func configInit() {
 	var pages Pages
 
-	configFile, err := os.Open("config.json")
+	configFile, err := os.Open("config copy 2.json")
 
 	if err != nil {
 		fmt.Println(err)

@@ -1,28 +1,28 @@
 {
   "pages": [
     {
-      "link": "https://dantri.com.vn",
+      "link": "https://vietnamnet.vn",
       "navigation": {
-        "query": ".menu-wrap li a",
+        "query": ".header__nav div ul li a",
         "validations": [
           {
             "name": "href",
-            "regex": "\/[a-zA-z-]*.htm"
+            "regex": "\/[a-zA-z-]*"
           }
         ]
       },
       "category": {
-        "query": "a[href]",
+        "query": "a[href][title]",
         "validations": [
           {
             "name": "href",
-            "regex": "\/[a-z-]+\/[a-z-]+[0-9]*.htm"
+            "regex": "https:\/\/vietnamnet.vn/[a-zA-z0-9-]*.html"
           }
         ],
         "paging": {
-          "format": "/trang-%d.htm",
-          "from": 1,
-          "to": 10
+          "format": "-page%d",
+          "from": 6,
+          "to": 20
         }
       },
       "document": {
@@ -30,19 +30,19 @@
         "validations": [
           {
             "name": "href",
-            "regex": "https:\/\/vnexpress.net\/[a-zA-z0-9-]*.html"
+            "regex": "https:\/\/vnexpress.net/[a-zA-z0-9-]*.html"
           }
         ],
         "title": {
-          "query": ".title-page",
+          "query": ".newsFeature__header-title",
           "validations": []
         },
         "description": {
-          "query": ".singular-sapo",
+          "query": ".newFeature__main-textBold",
           "validations": []
         },
         "content": {
-          "query": ".singular-content p",
+          "query": "p",
           "validations": []
         }
       }

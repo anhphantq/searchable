@@ -1,6 +1,7 @@
 import com.sun.net.httpserver.HttpExchange;
 import com.sun.net.httpserver.HttpHandler;
 import org.apache.lucene.queryparser.classic.QueryParser;
+import org.apache.lucene.queryparser.complexPhrase.ComplexPhraseQueryParser;
 import org.apache.lucene.search.*;
 import org.json.JSONArray;
 import org.json.JSONObject;
@@ -14,11 +15,13 @@ import java.util.HashMap;
 public class LuceneSearcher implements HttpHandler {
     private static SearcherManager searchManager;
     private static QueryParser queryParser;
+    private static QueryParser complexQueryParser;
 
     static {
         try {
             searchManager = new SearcherManager(LuceneWorker.writer, true, true, null);
             queryParser = new QueryParser("content", LuceneWorker.analyzer);
+            complexQueryParser = new ComplexPhraseQueryParser("content", LuceneWorker.analyzer);
         } catch (Exception e){
             System.out.println("Cannot initialize SearchManager...");
         }
@@ -70,6 +73,7 @@ public class LuceneSearcher implements HttpHandler {
         try {
             String queryString = httpExchange.getRequestURI().getQuery();
             String query = null;
+            int type = 2;
             if (queryString != null) {
                 Map<String, String> params = queryToMap(httpExchange.getRequestURI().getQuery());
                 query = params.get("query");
@@ -78,19 +82,63 @@ public class LuceneSearcher implements HttpHandler {
             if (requestParamValue != null && !requestParamValue.equals("") ) {
                 JSONObject requestBody = new JSONObject(requestParamValue);
                 query = requestBody.get("query").toString();
+                type = Integer.parseInt(requestBody.get("type").toString());
             }
 
-            if (query == null || query.equals(""))
+            Query Q = null;
+
+            /*
+            ["PhraseBoolean", "PhraseBooleanSlope", "BooleanQuery", "LuceneRawQuery", "FuzzyPhrase", "FuzzyBoolean"]
+             */
+
+
+            switch (type){
+                case 0:
+                    query = "title:\"" + query + "\" OR content:\"" + query + "\"" + "\" OR description:\"" + query + "\"";
+                    Q = queryParser.parse(query);
+                    System.out.println(query);
+                    break;
+                case 1:
+                    query = "title:\"" + query + "\"~10 OR content:\"" + query + "\"~10" + " OR description:\"" + query + "\"~10";
+                    Q = queryParser.parse(query);
+
+                    System.out.println(query);
+                    break;
+                case 2:
+                    String[] strings = query.split(" ");
+
+                    String tmp = "";
+
+                    for (String str: strings){
+                        String str_strim = str.trim();
+                        tmp = tmp + " title:\"" + str_strim + "\" OR content:\"" + str_strim + "\"" + " OR description:\"" + str_strim + "\"";
+                    }
+
+                    query = tmp;
+                    Q = complexQueryParser.parse(query);
+
+                    System.out.println(query);
+                    break;
+                case 3:
+                    Q = queryParser.parse(query);
+                    break;
+                case 4:
+                    // to be continued
+                    Q = queryParser.parse(query);
+                    break;
+                case 5:
+                    // to be continued
+                    Q = queryParser.parse(query);
+                    break;
+            }
+
+            if (query == null || query.equals("") || Q == null)
                 return;
-
-            System.out.println(query);
-
-            query = "title:\"" + query + "\" OR content:\"" + query + "\"";
 
             searchManager.maybeRefresh();
             IndexSearcher searcher = searchManager.acquire();
 
-            TopDocs docs = searcher.search(queryParser.parse(query), 10);
+            TopDocs docs = searcher.search(Q, 100);
 
             ScoreDoc[] docs_tq = docs.scoreDocs;
 
@@ -100,18 +148,27 @@ public class LuceneSearcher implements HttpHandler {
                 JSONObject doc = new JSONObject();
                 doc.put("score", docs_tq[i].score);
                 doc.put("link", searcher.doc(docs_tq[i].doc).get("link"));
+                try {
+                    doc.put("title", searcher.doc(docs_tq[i].doc).get("title"));
+                    doc.put("description", searcher.doc(docs_tq[i].doc).get("description"));
+                } catch (Exception e){
+                    System.out.println("No title and description");
+                }
 
                 res.put(doc);
             }
 
             OutputStream outputStream = httpExchange.getResponseBody();
             httpExchange.getResponseHeaders().set("Content-Type", "application/json");
-            httpExchange.sendResponseHeaders(200, res.toString().length());
+            httpExchange.sendResponseHeaders(200, res.toString().getBytes().length);
+            System.out.println(res.toString());
             outputStream.write(res.toString().getBytes());
             outputStream.flush();
             outputStream.close();
 
             searchManager.release(searcher);
-        } catch (Exception ignored) {}
+        } catch (Exception e) {
+            System.out.println(e.toString());
+        }
     }
 }

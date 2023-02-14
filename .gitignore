@@ -1,2 +1,5 @@
 workers/src/main/resources
-
+workers/target/classes/*
+.DS_Store
+.idea
+webapp/*/

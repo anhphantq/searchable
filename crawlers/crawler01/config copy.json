@@ -1,0 +1,103 @@
+{
+  "pages": [
+    {
+      "link": "https://vnexpress.net",
+      "navigation": {
+        "query": ".main-nav ul li a",
+        "validations": [
+          {
+            "name": "href",
+            "regex": "\/[a-zA-z-]*"
+          }
+        ]
+      },
+      "category": {
+        "query": "a[href][title]",
+        "validations": [
+          {
+            "name": "href",
+            "regex": "https:\/\/vnexpress.net\/[a-zA-z0-9-]*.html"
+          }
+        ],
+        "paging": {
+          "format": "-p%d",
+          "from": 10,
+          "to": 20
+        }
+      },
+      "document": {
+        "query": "",
+        "validations": [
+          {
+            "name": "href",
+            "regex": "https:\/\/vnexpress.net\/[a-zA-z0-9-]*.html"
+          }
+        ],
+        "title": {
+          "query": ".title-detail",
+          "validations": []
+        },
+        "description": {
+          "query": ".description",
+          "validations": []
+        },
+        "content": {
+          "query": "p",
+          "validations": [
+            {
+              "name": "class",
+              "regex": "Normal"
+            }
+          ]
+        }
+      }
+    },
+    {
+      "link": "https://dantri.com.vn",
+      "navigation": {
+        "query": ".menu-wrap li a",
+        "validations": [
+          {
+            "name": "href",
+            "regex": "\/[a-zA-z-]*.htm"
+          }
+        ]
+      },
+      "category": {
+        "query": "a[href]",
+        "validations": [
+          {
+            "name": "href",
+            "regex": "\/[a-z-]+\/[a-z-]+[0-9]*.htm"
+          }
+        ],
+        "paging": {
+          "format": "/trang-%d.htm",
+          "from": 10,
+          "to": 20
+        }
+      },
+      "document": {
+        "query": "",
+        "validations": [
+          {
+            "name": "href",
+            "regex": "https:\/\/vnexpress.net\/[a-zA-z0-9-]*.html"
+          }
+        ],
+        "title": {
+          "query": ".title-page",
+          "validations": []
+        },
+        "description": {
+          "query": ".singular-sapo",
+          "validations": []
+        },
+        "content": {
+          "query": ".singular-content p",
+          "validations": []
+        }
+      }
+    }
+  ]
+}
