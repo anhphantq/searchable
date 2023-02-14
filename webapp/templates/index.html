@@ -57,13 +57,13 @@
   <body>
     <div id="app-header">
       <div id="search-container">
-        <input id="input-search" type="text" oninput="search(this)" placeholder="search" class="input-search" />
-        <button class="submit btn-search"><img class="icon" src="{{ url_for('static', filename='images/search_red.svg') }}"></button>
+        <input id="input-search" type="text" placeholder="search" class="input-search" />
+        <button class="submit btn-search" onclick="search()"><img class="icon" src="{{ url_for('static', filename='images/search_red.svg') }}"></button>
       </div>
       <div id="search-option">
         <div style="display: flex; justify-content: space-between;">
           <label>
-            <input type="radio" name="search-option" value="0" checked>
+            <input type="radio" name="search-option" value="0">
             Phrase Boolean
           </label>
           <label>
@@ -145,6 +145,7 @@
         html = '';
         if (searchResult.length != 0) {
           for (var i = (page - 1) * news_per_page; i < (page* news_per_page); i++) {
+            if (i >= searchResult.length) break;
             html += `<div class="result-item" style="display: flex;">
               <div style="width: 42px;">#${i + 1} </div>
               <div style="width: calc(100% - 42px);">
@@ -181,8 +182,9 @@
       const updateResultDebouncer = debounce(updateSearchResult, 300, false);
 
       function search(thisEle) {
-        inputSearchValue = thisEle.value
-        updateResultDebouncer(inputSearchValue)
+        const inputElement = document.getElementById("input-search");
+        const inputValue = inputElement.value || "";
+        updateResultDebouncer(inputValue)
       }
 
       function prevPage() {
